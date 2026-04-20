@@ -254,15 +254,20 @@ export function useAudioEngine(sourceUrl: string, filterId: string, compareMode:
     const element = audioRef.current;
     if (!element) return;
     try {
-      if (!engineRef.current) engineRef.current = createAudioEngine(element);
+      if (!engineRef.current) {
+        engineRef.current = createAudioEngine(element);
+      }
+      await engineRef.current.loadSource(sourceUrl);
       await engineRef.current.init();
+      engineRef.current.setFilter(filterId);
+      engineRef.current.setCompareMode(compareMode);
       setEngineState('ready');
       setError(null);
     } catch (err) {
       setEngineState('failed');
       setError(err instanceof Error ? err.message : 'Failed to initialize audio engine');
     }
-  }, []);
+  }, [sourceUrl, filterId, compareMode]);
 
   useEffect(() => {
     const element = audioRef.current;
@@ -281,7 +286,13 @@ export function useAudioEngine(sourceUrl: string, filterId: string, compareMode:
   }, []);
 
   useEffect(() => {
-    if (engineRef.current) void engineRef.current.loadSource(sourceUrl);
+    const element = audioRef.current;
+    if (!element) return;
+    element.src = sourceUrl;
+    element.load();
+    if (engineRef.current) {
+      void engineRef.current.loadSource(sourceUrl);
+    }
   }, [sourceUrl]);
 
   useEffect(() => {
