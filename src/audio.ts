@@ -288,12 +288,21 @@ export function useAudioEngine(sourceUrl: string, filterId: string, compareMode:
   useEffect(() => {
     const element = audioRef.current;
     if (!element) return;
+    const wasPlaying = !element.paused;
     element.src = sourceUrl;
     element.load();
     if (engineRef.current) {
-      void engineRef.current.loadSource(sourceUrl);
+      void engineRef.current.loadSource(sourceUrl).then(() => {
+        engineRef.current?.setFilter(filterId);
+        engineRef.current?.setCompareMode(compareMode);
+        if (wasPlaying) {
+          void engineRef.current?.play().catch(() => {});
+        }
+      });
+    } else if (wasPlaying) {
+      void element.play().catch(() => {});
     }
-  }, [sourceUrl]);
+  }, [sourceUrl, filterId, compareMode]);
 
   useEffect(() => {
     engineRef.current?.setFilter(filterId);
