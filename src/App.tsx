@@ -5,6 +5,7 @@ import { getBandModel } from './visualization';
 import { AboutPanel, HeroSection } from './layout';
 import { SourcePanel } from './sourcePanel';
 import { NotesPanel } from './notesPanel';
+import { ModesPanel } from './modesPanel';
 import type { CompareMode, SourceType } from './types';
 
 export function App() {
@@ -181,32 +182,11 @@ export function App() {
           </section>
 
           <div className="stack-layout">
-            <section className="panel">
-              <div className="section-header">
-                <p className="eyebrow">Modes</p>
-                <h2>Choose a listening mode</h2>
-                <p className="section-copy">
-                  Condition covers everyday listening difficulty. Animal Reference translates differences in range into a comparison aid.
-                </p>
-              </div>
-              {(['condition', 'animal'] as const).map((group) => (
-                <div key={group} className="filter-group">
-                  <h3>{group === 'condition' ? 'Condition' : 'Animal Reference'}</h3>
-                  <div className="stack compact">
-                    {HEARING_FILTERS.filter((filter) => filter.group === group).map((filter) => (
-                      <button
-                        key={filter.id}
-                        className={`select-card ${selectedFilterId === filter.id ? 'is-selected' : ''}`}
-                        onClick={() => setSelectedFilterId(filter.id)}
-                      >
-                        <span className="select-card-title">{filter.title}</span>
-                        <span className="select-card-body">{filter.shortDescription}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </section>
+            <ModesPanel
+              filters={HEARING_FILTERS}
+              selectedFilterId={selectedFilterId}
+              onSelectFilter={setSelectedFilterId}
+            />
 
             <NotesPanel selectedFilter={selectedFilter} />
           </div>
