@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DEFAULT_FILTER_ID, BUILT_IN_SOURCES, HEARING_FILTERS, UI_TEXT } from './data';
 import { getBuiltInSourceUrl, useAudioEngine } from './audio';
 import { getBandModel } from './visualization';
@@ -7,15 +7,15 @@ import { SourcePanel } from './sourcePanel';
 import { NotesPanel } from './notesPanel';
 import { ModesPanel } from './modesPanel';
 import { ComparePanel } from './comparePanel';
+import { useCompareStatusText, useUploadedAudio } from './appHooks';
 import type { CompareMode, SourceType } from './types';
 
 export function App() {
   const [selectedSourceType, setSelectedSourceType] = useState<SourceType>('built-in');
   const [selectedBuiltInId, setSelectedBuiltInId] = useState('voice');
-  const [uploadedAudioUrl, setUploadedAudioUrl] = useState<string | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [selectedFilterId, setSelectedFilterId] = useState(DEFAULT_FILTER_ID);
   const [compareMode, setCompareMode] = useState<CompareMode>('filtered');
+  const { uploadedAudioUrl, uploadedFileName, setUploadedFile } = useUploadedAudio();
 
   const selectedFilter = useMemo(
     () => HEARING_FILTERS.find((filter) => filter.id === selectedFilterId) ?? HEARING_FILTERS[0],
@@ -43,28 +43,15 @@ export function App() {
     compareMode
   );
 
-  const statusText = useMemo(() => {
-    if (error) return 'Could not prepare audio. Try another source or reload the page.';
-    if (engineState === 'uninitialized') return 'Press Play to prepare audio and begin comparison.';
-    if (engineState === 'failed') return 'The audio engine could not be initialized in this browser.';
-    if (playbackState === 'playing') return 'Playing the current source.';
-    if (playbackState === 'paused') return 'Playback paused.';
-    return 'Audio engine ready.';
-  }, [engineState, playbackState, error]);
-
-  useEffect(() => {
-    return () => {
-      if (uploadedAudioUrl) {
-        URL.revokeObjectURL(uploadedAudioUrl);
-      }
-    };
-  }, [uploadedAudioUrl]);
+  const statusText = useCompareStatusText({
+    engineState,
+    playbackState,
+    error,
+  });
 
   function handleUpload(file: File | null) {
     if (!file) return;
-    if (uploadedAudioUrl) URL.revokeObjectURL(uploadedAudioUrl);
-    setUploadedAudioUrl(URL.createObjectURL(file));
-    setUploadedFileName(file.name);
+    setUploadedFile(file);
     setSelectedSourceType('upload');
   }
 
