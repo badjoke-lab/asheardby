@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_FILTER_ID, BUILT_IN_SOURCES, HEARING_FILTERS, UI_TEXT } from './data';
 import { getBuiltInSourceUrl, useAudioEngine } from './audio';
 import { getBandModel } from './visualization';
@@ -38,6 +38,23 @@ export function App() {
     compareMode
   );
 
+  const statusText = useMemo(() => {
+    if (error) return 'Could not prepare audio. Try another source or reload the page.';
+    if (engineState === 'uninitialized') return 'Press Play to prepare audio and begin comparison.';
+    if (engineState === 'failed') return 'The audio engine could not be initialized in this browser.';
+    if (playbackState === 'playing') return 'Playing the current source.';
+    if (playbackState === 'paused') return 'Playback paused.';
+    return 'Audio engine ready.';
+  }, [engineState, playbackState, error]);
+
+  useEffect(() => {
+    return () => {
+      if (uploadedAudioUrl) {
+        URL.revokeObjectURL(uploadedAudioUrl);
+      }
+    };
+  }, [uploadedAudioUrl]);
+
   function handleUpload(file: File | null) {
     if (!file) return;
     if (uploadedAudioUrl) URL.revokeObjectURL(uploadedAudioUrl);
@@ -68,7 +85,11 @@ export function App() {
             <div className="section-header">
               <p className="eyebrow">Source</p>
               <h2>Choose a source</h2>
+              <p className="section-copy">
+                Begin with a built-in sample or load your own local audio file. The comparison stays in the browser.
+              </p>
             </div>
+            <p className="subheading">Built-in samples</p>
             <div className="stack">
               {BUILT_IN_SOURCES.map((source) => (
                 <button
@@ -98,10 +119,14 @@ export function App() {
             <div className="section-header">
               <p className="eyebrow">Compare</p>
               <h2>Listen and compare</h2>
+              <p className="section-copy">
+                Keep the same source, then switch between Original and Filtered to compare the described change.
+              </p>
             </div>
             <div className="selection-summary">
               <span><strong>Source</strong> {selectedSource.title}</span>
               <span><strong>Mode</strong> {selectedFilter.title}</span>
+              <span><strong>View</strong> {compareMode === 'filtered' ? 'Filtered' : 'Original'}</span>
             </div>
             <div className="toggle-row">
               <button className={compareMode === 'original' ? 'mode-toggle is-active' : 'mode-toggle'} onClick={() => setCompareMode('original')}>
@@ -117,12 +142,15 @@ export function App() {
               <button onClick={() => restart()}>Restart</button>
             </div>
             <audio ref={audioRef} preload="auto" className="native-audio" />
-            <p className="status-line">Engine: {engineState} · Playback: {playbackState}</p>
+            <p className="status-line">{statusText}</p>
             {selectedFilter.headphonesRecommended ? <p className="hint">Headphones recommended for this mode.</p> : null}
 
             <div className="section-header visual-head">
               <p className="eyebrow">Visual</p>
               <h2>What changes</h2>
+              <p className="section-copy">
+                The display highlights which bands weaken, blur, overlap, or extend beyond the usual human range.
+              </p>
             </div>
             <div className="band-grid">
               {bands.labels.map((label, index) => (
@@ -145,6 +173,7 @@ export function App() {
             {selectedFilter.visualType === 'lr-balance' ? (
               <div className="context-panel">
                 <h3>Left / Right balance</h3>
+                <p className="section-copy compact-copy">One side is intentionally reduced so the stereo centre drifts away from balance.</p>
                 <div className="lr-meter">
                   <div className="lr-track"><div className="lr-fill left" style={{ width: '38%' }} /></div>
                   <div className="lr-track"><div className="lr-fill right" style={{ width: '100%' }} /></div>
@@ -155,6 +184,7 @@ export function App() {
             {selectedFilter.visualType === 'noise-overlap' ? (
               <div className="context-panel">
                 <h3>Noise overlap</h3>
+                <p className="section-copy compact-copy">The target signal remains, but competing sound or ringing makes it harder to separate.</p>
                 <div className="overlap-box">
                   <div className="overlap-speech">Speech</div>
                   <div className="overlap-noise">Noise / ringing</div>
@@ -165,6 +195,7 @@ export function App() {
             {selectedFilter.visualType === 'range-difference' ? (
               <div className="context-panel">
                 <h3>Human range and translated extension</h3>
+                <p className="section-copy compact-copy">Animal modes emphasize the difference between the common human range and a translated extension.</p>
                 <div className="range-wrap">
                   <div className="range-line human">Human range</div>
                   <div className="range-line extension">Extended reference range</div>
@@ -180,6 +211,9 @@ export function App() {
               <div className="section-header">
                 <p className="eyebrow">Modes</p>
                 <h2>Choose a listening mode</h2>
+                <p className="section-copy">
+                  Condition covers everyday listening difficulty. Animal Reference translates differences in range into a comparison aid.
+                </p>
               </div>
               {(['condition', 'animal'] as const).map((group) => (
                 <div key={group} className="filter-group">
@@ -204,6 +238,9 @@ export function App() {
               <div className="section-header">
                 <p className="eyebrow">Notes</p>
                 <h2>Notes on this mode</h2>
+                <p className="section-copy">
+                  These notes explain what this mode is trying to communicate and where to focus while listening.
+                </p>
               </div>
               <div className="notes-header">
                 <h3>{selectedFilter.title}</h3>
