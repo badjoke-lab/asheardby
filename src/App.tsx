@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_FILTER_ID, BUILT_IN_SOURCES, HEARING_FILTERS, UI_TEXT } from './data';
 import { getBuiltInSourceUrl, useAudioEngine } from './audio';
 import { getBandModel } from './visualization';
+import { AboutPanel, HeroSection } from './layout';
 import type { CompareMode, SourceType } from './types';
 
 export function App() {
@@ -66,19 +67,12 @@ export function App() {
   return (
     <div className="app-shell">
       <main className="page-wrap">
-        <section className="hero-section panel panel-hero">
-          <p className="eyebrow">The auditory companion volume</p>
-          <h1>{UI_TEXT.heroTitle}</h1>
-          <p className="subtitle">{UI_TEXT.heroSubtitle}</p>
-          <p className="lead">{UI_TEXT.heroLead}</p>
-          <div className="notice-block">
-            <p>{UI_TEXT.heroNotice}</p>
-            <ul>
-              <li>Start with a low volume.</li>
-              <li>Headphones are recommended for left-right asymmetry.</li>
-            </ul>
-          </div>
-        </section>
+        <HeroSection
+          title={UI_TEXT.heroTitle}
+          subtitle={UI_TEXT.heroSubtitle}
+          lead={UI_TEXT.heroLead}
+          notice={UI_TEXT.heroNotice}
+        />
 
         <div className="main-grid">
           <section className="panel">
@@ -258,16 +252,7 @@ export function App() {
           </div>
         </div>
 
-        <section className="panel panel-about">
-          <div className="section-header">
-            <p className="eyebrow">About</p>
-            <h2>About this project</h2>
-          </div>
-          <p>
-            AsHeardBy translates commonly described hearing differences into a browser-based comparison experience.
-            It is intended for reference and communication, not diagnosis or exact recreation of any single person’s hearing.
-          </p>
-        </section>
+        <AboutPanel />
       </main>
     </div>
   );
