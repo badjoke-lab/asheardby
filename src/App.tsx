@@ -3,6 +3,8 @@ import { DEFAULT_FILTER_ID, BUILT_IN_SOURCES, HEARING_FILTERS, UI_TEXT } from '.
 import { getBuiltInSourceUrl, useAudioEngine } from './audio';
 import { getBandModel } from './visualization';
 import { AboutPanel, HeroSection } from './layout';
+import { SourcePanel } from './sourcePanel';
+import { NotesPanel } from './notesPanel';
 import type { CompareMode, SourceType } from './types';
 
 export function App() {
@@ -75,39 +77,17 @@ export function App() {
         />
 
         <div className="main-grid">
-          <section className="panel">
-            <div className="section-header">
-              <p className="eyebrow">Source</p>
-              <h2>Choose a source</h2>
-              <p className="section-copy">
-                Begin with a built-in sample or load your own local audio file. The comparison stays in the browser.
-              </p>
-            </div>
-            <p className="subheading">Built-in samples</p>
-            <div className="stack">
-              {BUILT_IN_SOURCES.map((source) => (
-                <button
-                  key={source.id}
-                  className={`select-card ${selectedSourceType === 'built-in' && selectedBuiltInId === source.id ? 'is-selected' : ''}`}
-                  onClick={() => {
-                    setSelectedSourceType('built-in');
-                    setSelectedBuiltInId(source.id);
-                  }}
-                >
-                  <span className="select-card-title">{source.title}</span>
-                  <span className="select-card-body">{source.description}</span>
-                  <span className="select-card-meta">Recommended for: {source.recommendedFor}</span>
-                </button>
-              ))}
-            </div>
-
-            <label className={`upload-panel ${selectedSourceType === 'upload' ? 'is-selected' : ''}`}>
-              <span className="select-card-title">Upload audio</span>
-              <span className="select-card-body">Use a local audio file for comparison. Processing stays in the browser.</span>
-              <input type="file" accept="audio/*" onChange={(event) => handleUpload(event.target.files?.[0] ?? null)} />
-              <span className="select-card-meta">{uploadedFileName ? `Loaded: ${uploadedFileName}` : 'No file selected'}</span>
-            </label>
-          </section>
+          <SourcePanel
+            builtInSources={BUILT_IN_SOURCES}
+            selectedSourceType={selectedSourceType}
+            selectedBuiltInId={selectedBuiltInId}
+            uploadedFileName={uploadedFileName}
+            onSelectBuiltIn={(sourceId) => {
+              setSelectedSourceType('built-in');
+              setSelectedBuiltInId(sourceId);
+            }}
+            onUpload={handleUpload}
+          />
 
           <section className="panel panel-center">
             <div className="section-header">
@@ -228,27 +208,7 @@ export function App() {
               ))}
             </section>
 
-            <section className="panel">
-              <div className="section-header">
-                <p className="eyebrow">Notes</p>
-                <h2>Notes on this mode</h2>
-                <p className="section-copy">
-                  These notes explain what this mode is trying to communicate and where to focus while listening.
-                </p>
-              </div>
-              <div className="notes-header">
-                <h3>{selectedFilter.title}</h3>
-                <p>{selectedFilter.shortDescription}</p>
-              </div>
-              <dl className="notes-list">
-                <div className="note-item"><dt>What it is</dt><dd>{selectedFilter.notes.whatItIs}</dd></div>
-                <div className="note-item"><dt>Based on</dt><dd>{selectedFilter.notes.basedOn}</dd></div>
-                <div className="note-item"><dt>What changes</dt><dd>{selectedFilter.notes.whatChanges}</dd></div>
-                <div className="note-item"><dt>What to notice</dt><dd>{selectedFilter.notes.whatToNotice}</dd></div>
-                <div className="note-item"><dt>Limits</dt><dd>{selectedFilter.notes.limits}</dd></div>
-              </dl>
-              <p className="small-disclaimer">Reference / approximation · not diagnosis · not exact reproduction</p>
-            </section>
+            <NotesPanel selectedFilter={selectedFilter} />
           </div>
         </div>
 
