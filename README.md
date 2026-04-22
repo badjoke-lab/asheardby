@@ -50,6 +50,26 @@ The current MVP uses:
 - noise overlap for masking / tinnitus-style modes
 - human range vs extended range indicator for animal modes
 
+## Current implementation snapshot
+
+### Main files
+- `src/App.tsx` — page container and state wiring
+- `src/layout.tsx` — `HeroSection`, `AboutPanel`
+- `src/sourcePanel.tsx` — source selection panel
+- `src/modesPanel.tsx` — filter selection panel
+- `src/notesPanel.tsx` — notes panel
+- `src/comparePanel.tsx` — compare / player / visual panel
+- `src/appHooks.ts` — app-level hooks
+- `src/audio.ts` — built-in audio generation, Web Audio engine, `useAudioEngine`
+- `src/visualization.ts` — band comparison model
+- `src/data.ts` — UI text, sources, filters
+- `src/types.ts` — shared types
+
+### App-level hooks
+- `useUploadedAudio`
+- `useCompareStatusText`
+- `useResolvedSource`
+
 ## Project docs
 
 - `docs/00-mvp-spec.md`
