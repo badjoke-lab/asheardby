@@ -1,4 +1,4 @@
-# AsHeardBy 実装者向けコンポーネント一覧 v0.1
+# AsHeardBy 実装者向けコンポーネント一覧 v0.2
 
 ## 全体方針
 MVPは **1ページ完結**。
@@ -14,188 +14,200 @@ MVPは **1ページ完結**。
 
 に分ける。
 
+ただし現時点では、理想構成へ一気に分割するのではなく、**1枚実装から安全に分離していく段階的リファクタ** を採っている。
+
+---
+
+## 現在の実装スナップショット
+
+現在 repo 上で使っている主なファイルは次のとおり。
+
+### ページ / 接続
+- `src/App.tsx`
+  - 最小の state と panel 接続
+
+### レイアウト系
+- `src/layout.tsx`
+  - `HeroSection`
+  - `AboutPanel`
+
+### パネル系
+- `src/sourcePanel.tsx`
+  - `SourcePanel`
+- `src/modesPanel.tsx`
+  - `ModesPanel`
+- `src/notesPanel.tsx`
+  - `NotesPanel`
+- `src/comparePanel.tsx`
+  - `ComparePanel`
+
+### ロジック / hook
+- `src/appHooks.ts`
+  - `useCompareStatusText`
+  - `useUploadedAudio`
+  - `useResolvedSource`
+- `src/audio.ts`
+  - built-in sample generation
+  - Web Audio engine
+  - `useAudioEngine`
+- `src/visualization.ts`
+  - band comparison model
+
+### データ
+- `src/data.ts`
+  - UI text
+  - built-in source definitions
+  - filter definitions
+- `src/types.ts`
+  - shared types
+
+この状態をベースに、必要に応じてさらに細分化していく。
+
 ---
 
 ## 1. ルート構成
 
-### `AsHeardByPage`
+### `App`
 ページ全体の最上位。
 
 **責務**
 - 全体状態の保持
-- セクションへの props 配布
-- 初期選択の設定
-- コンポーネント間イベントの仲介
+- panel への props 配布
+- audio / visualization / docs 方針との接続
+
+現段階では `App.tsx` は **ページコンテナ** に近い役割まで整理されている。
 
 ---
 
 ## 2. レイアウト系
 
-### `AppShell`
-全体の余白、背景、最大幅、百科事典風の骨格を担当。
-
 ### `HeroSection`
 ページ上部の導入。
 
-### `MainThreeColumnLayout`
-デスクトップ時の3カラム骨格。
+### `AboutPanel`
+最下部の補足説明。
 
-### `MobileStackLayout`
-モバイル時の縦1列骨格。
+今はこの2つを `src/layout.tsx` にまとめている。
 
 ---
 
 ## 3. Source 系
 
-### `SourceSection`
+### `SourcePanel`
 音源選択セクション全体。
 
-### `BuiltInSampleList`
-内蔵サンプル一覧。
+**責務**
+- built-in sample の表示
+- upload input の表示
+- 選択状態の見た目
 
-### `BuiltInSampleCard`
-1サンプル分のカード。
-
-### `UploadAudioPanel`
-アップロード領域。
-
-### `UploadStatusMessage`
-アップロード状態文だけを表示。
+将来的には必要に応じて
+- `BuiltInSampleCard`
+- `UploadAudioPanel`
+- `UploadStatusMessage`
+などへ再分割できるが、現時点では1ファイルで十分。
 
 ---
 
 ## 4. Filter 系
 
-### `FilterSection`
-フィルタ一覧セクション全体。
+### `ModesPanel`
+Condition / Animal Reference の2グループをまとめるパネル。
 
-### `FilterGroup`
-カテゴリ単位のグループ。
+**責務**
+- グループ見出し
+- フィルタカード一覧
+- 選択状態の見た目
 
-### `FilterCardList`
-カード一覧。
-
-### `FilterCard`
-1フィルタ分のカード。
-
-### `FilterBadge`
-Condition / Animal の小ラベル。
+将来的には `FilterCard` などへ分けてもよいが、今は1ファイルで扱う。
 
 ---
 
 ## 5. Compare / Player 系
 
-### `CompareSection`
-聞き比べセクション全体。
+### `ComparePanel`
+中央カラム全体。
 
-### `AudioPlayerPanel`
-プレイヤー本体を包む。
+**責務**
+- source / mode / view summary
+- Original / Filtered toggle
+- Play / Pause / Restart
+- audio element
+- status text
+- band comparison
+- context visual
+- error display
 
-### `AudioControls`
-再生系ボタン群。
-
-### `CompareModeToggle`
-Original / Filtered 切替。
-
-### `CurrentSelectionSummary`
-現在の source / mode を短く表示。
-
-### `HeadphonesNotice`
-左右差などのときだけ表示。
-
-### `MomentaryOriginalButton`
-任意追加。押している間だけ Original に戻す。
-
----
-
-## 6. Visualization 系
-
-### `VisualizationSection`
-可視化セクション全体。
-
-### `BandComparisonChart`
-主表示。全フィルタ共通。
-
-### `ContextVisualSlot`
-補助表示の差し替え領域。
-
-### `LeftRightBalanceMeter`
-左右差用。
-
-### `NoiseOverlapVisual`
-雑音下 / 耳鳴り / 輪郭低下用。
-
-### `RangeDifferenceIndicator`
-Animal 用。Human range / Extended high / Extended low を見せる。
+現在の `ComparePanel` は、将来分けうる
+- audio controls
+- compare toggle
+- visualization
+- context visual
+をまとめて持つ **MVP中心パネル** である。
 
 ---
 
-## 7. Notes 系
+## 6. Notes 系
 
-### `FilterNotesSection`
+### `NotesPanel`
 選択中フィルタの詳細説明全体。
 
-### `FilterNotesHeader`
-フィルタ名と短い要約。
-
-### `FilterNotesList`
-5項目説明一覧。
-
-### `FilterNoteItem`
-1項目分。
-
-### `SmallDisclaimer`
-reference / approximation / 個人差あり などの小注記。
-
----
-
-## 8. About 系
-
-### `AboutSection`
-最下部の補足説明。
-
-### `FooterNote`
-短いフッター注記。
-
----
-
-## 9. 状態表示系
-
-### `StatusMessage`
-汎用状態文。
-
-### `ErrorNotice`
-エラー表示専用。
-
-### `InlineHint`
-補助ヒント専用。
-
----
-
-## 10. データ / ロジック分離向け
-
-### `audioSources.ts`
-- built-in sample 定義
-- source metadata
-
-### `filters.ts`
-- filter 定義
-- group type
-- short text
+**責務**
+- フィルタ名
+- 短い要約
 - 5項目説明
-- visualization type
-- headphones recommendation
+- 小さい disclaimer
 
-### `uiText.ts`
-- Hero 文言
-- 共通ラベル
-- 状態文言
+---
 
-### `audioEngine.ts`
-- audio source load
-- original / filtered 切替
-- filter apply
+## 7. app-level hooks
 
-### `visualizationModel.ts`
-- 5帯域の表示値生成
-- context visual type 判定
+### `useCompareStatusText`
+`engineState / playbackState / error` から compare status 文言を返す。
+
+### `useUploadedAudio`
+uploaded object URL の生成・保持・cleanup を担当する。
+
+### `useResolvedSource`
+現在の source state から、実際に使う `{ title, url }` を返す。
+
+---
+
+## 8. audio / visualization
+
+### `src/audio.ts`
+**責務**
+- built-in sample のブラウザ内生成
+- Web Audio graph の構築
+- compare mode 適用
+- filter 適用
+- `useAudioEngine` 提供
+
+### `src/visualization.ts`
+**責務**
+- filter ごとの帯域表示モデル返却
+
+現在の可視化は **説明図としての model** であり、厳密な計測器UIではない。
+
+---
+
+## 9. 今後の分割候補
+
+現時点で直ちに必要ではないが、次の粒度へ分ける余地はある。
+
+- `comparePanel.tsx` →
+  - `AudioControls`
+  - `CompareModeToggle`
+  - `BandComparisonChart`
+  - `ContextVisual`
+- `sourcePanel.tsx` →
+  - `BuiltInSampleCard`
+  - `UploadAudioPanel`
+- `modesPanel.tsx` →
+  - `FilterCard`
+- `audio.ts` →
+  - sample generation
+  - engine
+  - hook
+
+ただし今は **動くMVPを保ちながらの最小整理** を優先する。
