@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AudioEngineState, PlaybackState } from './types';
+import { getBuiltInSourceUrl } from './audio';
+import type { AudioEngineState, AudioSource, PlaybackState, SourceType } from './types';
 
 export function useCompareStatusText(params: {
   engineState: AudioEngineState;
@@ -44,4 +45,36 @@ export function useUploadedAudio() {
     uploadedFileName,
     setUploadedFile,
   };
+}
+
+export function useResolvedSource(params: {
+  selectedSourceType: SourceType;
+  selectedBuiltInId: string;
+  uploadedAudioUrl: string | null;
+  uploadedFileName: string | null;
+  builtInSources: AudioSource[];
+}) {
+  const {
+    selectedSourceType,
+    selectedBuiltInId,
+    uploadedAudioUrl,
+    uploadedFileName,
+    builtInSources,
+  } = params;
+
+  return useMemo(() => {
+    if (selectedSourceType === 'upload' && uploadedAudioUrl) {
+      return {
+        title: uploadedFileName ?? 'Uploaded audio',
+        url: uploadedAudioUrl,
+      };
+    }
+
+    const builtIn = builtInSources.find((source) => source.id === selectedBuiltInId) ?? builtInSources[0];
+
+    return {
+      title: builtIn.title,
+      url: getBuiltInSourceUrl(builtIn.id),
+    };
+  }, [selectedSourceType, selectedBuiltInId, uploadedAudioUrl, uploadedFileName, builtInSources]);
 }
