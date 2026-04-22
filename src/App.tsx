@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { DEFAULT_FILTER_ID, BUILT_IN_SOURCES, HEARING_FILTERS, UI_TEXT } from './data';
-import { getBuiltInSourceUrl, useAudioEngine } from './audio';
+import { useAudioEngine } from './audio';
 import { getBandModel } from './visualization';
 import { AboutPanel, HeroSection } from './layout';
 import { SourcePanel } from './sourcePanel';
 import { NotesPanel } from './notesPanel';
 import { ModesPanel } from './modesPanel';
 import { ComparePanel } from './comparePanel';
-import { useCompareStatusText, useUploadedAudio } from './appHooks';
+import { useCompareStatusText, useResolvedSource, useUploadedAudio } from './appHooks';
 import type { CompareMode, SourceType } from './types';
 
 export function App() {
@@ -22,19 +22,13 @@ export function App() {
     [selectedFilterId]
   );
 
-  const selectedSource = useMemo(() => {
-    if (selectedSourceType === 'upload' && uploadedAudioUrl) {
-      return {
-        title: uploadedFileName ?? 'Uploaded audio',
-        url: uploadedAudioUrl,
-      };
-    }
-    const builtIn = BUILT_IN_SOURCES.find((source) => source.id === selectedBuiltInId) ?? BUILT_IN_SOURCES[0];
-    return {
-      title: builtIn.title,
-      url: getBuiltInSourceUrl(builtIn.id),
-    };
-  }, [selectedSourceType, uploadedAudioUrl, uploadedFileName, selectedBuiltInId]);
+  const selectedSource = useResolvedSource({
+    selectedSourceType,
+    selectedBuiltInId,
+    uploadedAudioUrl,
+    uploadedFileName,
+    builtInSources: BUILT_IN_SOURCES,
+  });
 
   const bands = useMemo(() => getBandModel(selectedFilter.id), [selectedFilter.id]);
   const { audioRef, engineState, playbackState, error, play, pause, restart } = useAudioEngine(
