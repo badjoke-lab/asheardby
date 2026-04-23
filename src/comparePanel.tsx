@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { Ref } from 'react';
 import type { CompareMode, HearingFilter } from './types';
 
 type BandModel = {
@@ -12,7 +12,7 @@ export function ComparePanel(props: {
   selectedFilter: HearingFilter;
   compareMode: CompareMode;
   statusText: string;
-  audioRef: RefObject<HTMLAudioElement | null>;
+  audioRef: Ref<HTMLAudioElement>;
   bands: BandModel;
   error: string | null;
   onSetCompareMode: (mode: CompareMode) => void;
